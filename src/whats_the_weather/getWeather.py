@@ -2,6 +2,7 @@ import httpx
 import csv
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from whats_the_weather.calculate_feels_like_temp import calculate_feels_like
 ##https://ai.google.dev/gemini-api/docs/get-started
 
 def convert_to_swedish_time(utc_time_str: str,) -> str:
@@ -25,11 +26,18 @@ class Weather:
             time_series = raw_data["timeSeries"]
             path = "src/whats_the_weather/weather.csv"
             with open(path, "w", newline="") as f:
-                fieldnames = ["time"] + list(time_series[0]["data"].keys())
+                fieldnames = ["time"] + list(time_series[0]["data"].keys()) + ["feels_like"]
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
                 for entry in time_series:
-                    row = {"time": convert_to_swedish_time(entry["time"]), **entry["data"]}
+                    row = {
+                        "time": convert_to_swedish_time(entry["time"]),
+                        **entry["data"],
+                        "feels_like": calculate_feels_like(
+                            entry["data"]["air_temperature"], 
+                            entry["data"]["wind_speed"]
+                        ),
+                    }
                     writer.writerow(row)
             print(f"Weather data saved to {path}")
             return raw_data
