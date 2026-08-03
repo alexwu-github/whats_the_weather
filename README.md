@@ -5,7 +5,7 @@ Fetches an hourly weather forecast from [SMHI](https://opendata.smhi.se/) for a 
 ## How it works
 
 1. `Weather.get_weather()` in [getWeather.py](src/whats_the_weather/getWeather.py) requests the forecast from SMHI's point-forecast API and writes it to `src/whats_the_weather/weather.csv`, converting each timestamp from UTC to `Europe/Stockholm` time and adding a calculated `feels_like` temperature (wind chill, via [calculate_feels_like_temp.py](src/whats_the_weather/calculate_feels_like_temp.py)).
-2. [main.py](src/whats_the_weather/main.py) reads that CSV and passes it to `get_clothing_advice()` in [get_clothing_advice.py](src/whats_the_weather/get_clothing_advice.py), which prompts Gemini for a Swedish summary of the day's weather and what to wear (layers, umbrella, sunglasses, winter jacket, windproof jacket, etc. depending on conditions).
+2. [main.py](src/whats_the_weather/main.py) reads that CSV and passes it to `get_clothing_advice()` in [get_clothing_advice.py](src/whats_the_weather/get_clothing_advice.py), which prompts Gemini for a Swedish summary of the day's weather and what to wear (layers, umbrella, sunglasses, winter jacket, windproof jacket, etc. depending on conditions). Errors from the Gemini API (bad request, server error, empty response) are caught and re-raised as a `RuntimeError` with a Swedish message.
 3. `send_to_discord()` in [discord_notification.py](src/whats_the_weather/discord_notification.py) posts a message to a Discord channel through a webhook.
 
 ## Requirements
