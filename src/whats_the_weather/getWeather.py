@@ -1,15 +1,19 @@
 import httpx
-import asyncio
 import csv
-
+from datetime import datetime
+from zoneinfo import ZoneInfo
 ##https://ai.google.dev/gemini-api/docs/get-started
 
+def convert_to_swedish_time(utc_time_str: str,) -> str:
+    utc_time = datetime.fromisoformat(utc_time_str.replace("Z", "+00:00"))
+    local_time = utc_time.astimezone(ZoneInfo('Europe/Stockholm'))
+    return local_time.strftime("%Y-%m-%d %H:%M:%S")
 
 class Weather:
     def __init__(self, url: str):
         self.url = url
 
-    async def fetch_weather(self):
+    async def get_weather(self):
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(self.url)
@@ -25,7 +29,7 @@ class Weather:
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
                 for entry in time_series:
-                    row = {"time": entry["time"], **entry["data"]}
+                    row = {"time": convert_to_swedish_time(entry["time"]), **entry["data"]}
                     writer.writerow(row)
             print(f"Weather data saved to {path}")
             return raw_data
