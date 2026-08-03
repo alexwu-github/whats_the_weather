@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from whats_the_weather.discord_notification import send_to_discord
 from whats_the_weather.get_clothing_advice import get_clothing_advice
 from whats_the_weather.getWeather import Weather
+from whats_the_weather.scheduler import start_scheduler
 
 load_dotenv()
 
@@ -14,11 +15,12 @@ load_dotenv()
 
 discord_webhook_url = os.getenv("DISCORD_CHANNEL_WEBHOOK_URL")
 
-url = "https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point/lon/18.2282/lat/59.3086/data.json"
+weather_url = "https://opendata-download-metfcst.smhi.se/api/category/snow1g/version/1/geotype/point/lon/18.2282/lat/59.3086/data.json"
+
 weather_csv_path = "src/whats_the_weather/weather.csv"
 
 
-async def main(url: str):
+async def main(url: str = weather_url):
     weather = Weather(url)
     await weather.get_weather()
     print("fetching completed")
@@ -31,5 +33,11 @@ async def main(url: str):
     await send_to_discord(discord_webhook_url, advice)
 
 
+async def run_scheduler():
+    start_scheduler()
+    while True:
+        await asyncio.sleep(3600)  # Keep the scheduler running
+
+
 if __name__ == "__main__":
-    asyncio.run(main(url))
+    asyncio.run(main(run_scheduler()))
