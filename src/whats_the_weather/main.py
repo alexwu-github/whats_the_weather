@@ -25,7 +25,7 @@ async def main(url: str):
     advice = get_clothing_advice(csv_data)
     print(advice)
 
-    await send_to_discord(discord_webhook_url, 'test message from whats_the_weather')
+    await send_to_discord(discord_webhook_url, advice)
 
 if __name__ == "__main__":
     asyncio.run(main(url))
