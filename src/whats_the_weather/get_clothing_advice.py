@@ -25,8 +25,8 @@ def get_clothing_advice(csv_data: str) -> str:
     - Om det regnar, rekommendera paraply
     - Om det är soligt, rekommendera solglasögon och solskydd
     - Om det snöar, rekommendera varm jacka och stövlar
+    - Om det är blåsigt, rekommddera vindtät jacka
     """,
 )   
-    print(interaction.output_text)
     return interaction.output_text
     
