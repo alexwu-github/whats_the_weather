@@ -16,12 +16,16 @@ FROM python:3.14.6-slim AS runner
 
 WORKDIR /app
 
-COPY --from=builder /app/.venv ./.venv
-COPY src/ ./src/
+RUN useradd --create-home --shell /bin/bash appuser
+
+COPY --from=builder --chown=appuser:appuser /app/.venv ./.venv
+COPY --chown=appuser:appuser src/ ./src/
 
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app/src"
+ENV PYTHONUNBUFFERED=1
+ENV LOG_LEVEL=WARNING
 
-EXPOSE 8000
+USER appuser
 
 CMD ["python", "-m", "whats_the_weather.main"]
