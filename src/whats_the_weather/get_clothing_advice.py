@@ -13,25 +13,28 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 
-def get_clothing_advice(csv_data: str) -> str:
+async def get_clothing_advice(csv_data: str) -> str:
     try:
-        interaction = client.interactions.create(
-            model="gemini-3.5-flash",
-            input=f"""
+        response = await client.aio.models.generate_content(
+            model="gemini-3.5-flash-lite",
+            contents=f"""
             Väderdata: {csv_data}
 
+            - Max 10-15 meningar totalt
+            - Skriv i punktform, för lättare läsning
             - Använd ENDAST Celsius för temperaturer, aldrig Fahrenheit
             - Använd 24-timmarsformat för tid (t.ex. "14:00", ALDRIG "2 PM")
-            - Ange temperaturen tillsammans med "känns som"-temperaturen (feels_like) om den skiljer sig från den faktiska temperaturen
+            - Ange "känns som"-temperatur BARA om den skiljer sig från den faktiska temperaturen
+            - Ignorera tidpunkter FÖRE kl 07:00 - de är ointressanta för dagens sammanfattning
+            - "Morgon" avser tidpunkter från och med kl 07:00
             - Svara på svenska
+            - Om det är risk för regn eller snö, skriv hur stort chans det är (t.ex. "50% chans för regn/snö")
 
-            Ge en sammanfattning av dagens väder, inklusive:
-            - Temperatur (och "känns som"-temperatur om relevant) under dagen
-            - Om det är kallt på morgonen men blir varmare senare, rekommendera lager-klädsel
-            - Om det regnar, rekommendera paraply
-            - Om det är soligt, rekommendera solglasögon och solskydd
-            - Om det snöar, rekommendera varm jacka och stövlar
-            - Om det är blåsigt, rekommendera vindtät jacka
+            Sammanfatta dagens väder (temperatur under dagen, med morgon definierat som tidigast 07:00) och ge klädråd:
+            - Lager om det är kallt på morgonen men blir varmare
+            - Paraply om det regnar
+            - Solglasögon/solskydd om det är soligt
+            - Varm jacka/stövlar om det snöar   
             """,
         )
     except errors.ClientError as e:
@@ -43,7 +46,7 @@ def get_clothing_advice(csv_data: str) -> str:
     except errors.APIError as e:
         raise RuntimeError(f"Error at request: {e}") from e
 
-    if not interaction.output_text:
+    if not response.text:
         raise RuntimeError("Gemini return empty response, try again later")
 
-    return interaction.output_text
+    return response.text
