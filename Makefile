@@ -3,4 +3,4 @@ fix:
 	poetry run ruff format .
 
 run:
-	poetry run python -m src/whats_the_weather/main.py
+	poetry run python -m whats_the_weather.main
